@@ -1,9 +1,24 @@
 import express from 'express';
+import { getSecret } from './secrets';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 const app = express();
 const port = 3000;
 
-app.get('/', (req, res) => {
-    res.send('Hello World!');
+interface ICredentials {
+    access_token: string; client_secret: string;
+}
+
+app.get('/', async (req, res): Promise<ICredentials> => {
+    const secrets = await getSecret(process.env.SECRETS_MANAGER_ARN);
+    const secretsObj: ICredentials = JSON.parse(secrets);
+
+    console.log(secretsObj.access_token);
+    console.log(secretsObj.client_secret);
+
+    res.json(secretsObj);
+    return Promise.resolve(secretsObj);
 });
 
 app.listen(port, () => {
